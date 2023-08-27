@@ -40,12 +40,12 @@ exec api-user generate-key <api-username>
 
 ## Create tab-deliminated CSV File. Example below:
 ```
-name&nbspip&nbsptoken&nbspapiuser
-FW1&nbsp10.0.0.10:1443&nbspqwertyuiopasdfghjklzxcvbnm1234&nbspapiuser
-FW2&nbsp192.168.1.1&nbspqwertyuiopasdfghjklzxcvbnm1234&nbspapiuser
-FW3&nbsp100.64.255.1&nbspqwertyuiopasdfghjklzxcvbnm1234&nbspapiuser
-FW4&nbsp172.16.1.1:8443&nbspqwertyuiopasdfghjklzxcvbnm1234&nbspapiuser
-FW5&nbsp10.255.0.1:10443&nbspqwertyuiopasdfghjklzxcvbnm1234&nbspapiuser
+name	ip	token	apiuser
+FW1	10.0.0.10:1443	qwertyuiopasdfghjklzxcvbnm1234	apiuser
+FW2	192.168.1.1	qwertyuiopasdfghjklzxcvbnm1234	apiuser
+FW3	100.64.255.1	qwertyuiopasdfghjklzxcvbnm1234	apiuser
+FW4	172.16.1.1:8443	qwertyuiopasdfghjklzxcvbnm1234	apiuser
+FW5	10.255.0.1:10443	qwertyuiopasdfghjklzxcvbnm1234	apiuser
 ```
 
 ## Installation
