@@ -1,33 +1,46 @@
 import requests
 import pandas as pd
 import urllib3
+import os
+
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-def get_routes(ip, token, vdom):
+def get_routes(fortigate_ip, api_token, vdom):
+    url = f"https://{fortigate_ip}/api/v2/monitor/router/ipv4?vdom={vdom}"
     headers = {
-        'Authorization': f'Bearer {token}'
+        'Authorization': f'Bearer {api_token}'
     }
-    url = f'https://{ip}/api/v2/monitor/router/ipv4?vdom={vdom}'
+
     try:
-        response = requests.get(url, headers=headers, verify=False, timeout=5)  # timeout set to 5 seconds
+        response = requests.get(url, headers=headers, verify=False, timeout=5)
         response.raise_for_status()
-        return response.json()['results']
+        data = response.json()
+        return data.get("results", [])
     except requests.Timeout:
-        print(f"Warning: Failed to communicate with Fortigate at IP {ip}. Request timed out.")
+        print(f"Warning: Failed to communicate with Fortigate at IP {fortigate_ip}. Request timed out.")
         return []
     except requests.RequestException as e:
-        print(f"Error communicating with Fortigate at IP {ip}. Error: {e}")
+        print(f"Failed to communicate with FortiGate at {fortigate_ip}. Error: {e}")
         return []
 
-def highlight_routes(val):
+def highlight_routes(data_frame):
+    # Define color map
     color_map = {
         'ospf': 'lightcoral',  # light red
         'bgp': 'lightblue',
-        'connected': 'lightgreen',
+        'connect': 'lightgreen',
         'static': 'plum'  # light purple
     }
-    color = color_map.get(val, 'white')  # default to white if route type not in color_map
-    return f'background-color: {color}'
+    
+    # Default coloring
+    df_color = pd.DataFrame('background-color: white', index=data_frame.index, columns=data_frame.columns)
+    
+    # Apply coloring for entire row based on the 'type' column
+    for route_type, color in color_map.items():
+        df_color[data_frame['type'] == route_type] = f'background-color: {color}'
+    
+    return df_color
+
 
 def main():
     # Prompt user for VDOMs
@@ -48,6 +61,14 @@ def main():
         print("The CSV file is missing required columns ('ip' and/or 'token').")
         return
 
+    output_file = 'fortigate_routes.xlsx'
+    
+    if not os.path.exists(output_file):
+        try:
+            open(output_file, 'w').close()
+        except Exception as e:
+            print(f"Couldn't create the file due to: {e}")
+
     with pd.ExcelWriter('fortigate_routes.xlsx') as writer:
         for index, row in fortigates.iterrows():
             for vdom in vdoms:
@@ -56,7 +77,7 @@ def main():
                     df = pd.DataFrame(routes)
                     
                     # Apply styling to the DataFrame
-                    styled_df = df.style.applymap(highlight_routes, subset=['type'])
+                    styled_df = df.style.apply(highlight_routes, axis=None)
                     
                     # Write styled DataFrame to Excel
                     sheet_name = f"{row['name']}_{vdom}"
